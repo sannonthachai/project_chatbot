@@ -1,0 +1,33 @@
+version: '3'
+services:
+
+    mongodb:
+        image: mongo:latest
+        container_name: "mongodb"
+        environment:
+          - MONGO_INITDB_ROOT_USERNAME=test
+          - MONGO_INITDB_ROOT_PASSWORD=test
+        ports:
+          - "27018:27017"
+        network_mode: bridge
+
+    project_chatbot:
+        build: .
+        image: project_chatbot
+        container_name: project_chatbot
+        links: 
+          - mongodb
+        depends_on: 
+          - mongodb
+        ports:
+          - "5000:5000"
+        volumes: 
+          - ".:/app"
+        environment: 
+          - MONGODB_NAME=python-socket-test
+          - MONGODB_URI=mongodb://test:test@mongodb:27017/
+          # - MONGODB_GRID_FS_BOT_IMG=http://localhost:3000/v1/bot/gridfs?id=
+          # - NAMETEST=name
+        command: gunicorn --worker-class=gevent --worker-connections=1024 -b :5000 --access-logfile - app:app 
+        network_mode: bridge
+
